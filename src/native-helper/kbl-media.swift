@@ -22,7 +22,7 @@ func postIlluminationKey(up: Bool) {
         event?.cgEvent?.post(tap: .cghidEventTap)
     }
 }
-
+//
 let args = CommandLine.arguments
 guard args.count == 2, args[1] == "up" || args[1] == "down" else { fail("usage: kbl-media up|down", 2) }
 guard AXIsProcessTrusted() else {
