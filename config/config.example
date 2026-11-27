@@ -1,0 +1,18 @@
+# keyboard-light configuration. Format: KEY=VALUE (no quotes, no shell syntax; it is parsed, never executed).
+# The file must be owned by you and not group/world-writable (chmod 600).
+
+# Brightness change per key press, in percent (1-100). Default 10.
+STEP_PERCENT=10
+
+# Lowest/highest brightness the shortcuts may reach, in percent (MIN < MAX).
+MIN_PERCENT=0
+MAX_PERCENT=100
+
+# auto: use CoreBrightness, fall back to the media-key method if it is unavailable
+# corebrightness: only the exact method (reads real level, clamps)
+# mediakey: only the fallback (no readback, no clamping; uses macOS's own steps)
+BACKEND=auto
+
+# error | info | debug. Default "error": nothing is logged on a normal key press (fastest).
+# Use "info" to log every adjustment while troubleshooting.
+LOG_LEVEL=error

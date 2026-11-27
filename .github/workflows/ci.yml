@@ -1,0 +1,46 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          shellcheck -x src/keyboard-light.sh scripts/*.sh tests/hardware/acceptance.sh
+      - name: Tests (mock backend)
+        run: ./tests/run-tests.sh
+
+  macos-apple-silicon:
+    # macos-14 and newer are Apple Silicon (arm64). This is the first real compile of the Swift helper.
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain info
+        run: |
+          uname -m; sw_vers; swiftc --version; /bin/bash --version | head -1
+      - name: Compile and ad-hoc sign the helper
+        run: |
+          mkdir -p /tmp/kbl-out
+          swiftc -Osize -o /tmp/kbl-out/kbl-helper src/native-helper/kbl-helper.swift
+          swiftc -Osize -o /tmp/kbl-out/kbl-media  src/native-helper/kbl-media.swift
+          codesign --force --sign - --identifier io.github.keyboard-light.helper /tmp/kbl-out/kbl-helper
+          codesign --force --sign - --identifier io.github.keyboard-light.media  /tmp/kbl-out/kbl-media
+          ls -l /tmp/kbl-out
+          /tmp/kbl-out/kbl-helper probe || true      # a CI VM has no keyboard backlight; informational only
+      - name: Upload compiled helper (for install.sh --prebuilt)
+        uses: actions/upload-artifact@v4
+        with:
+          name: kbl-helper-arm64
+          path: /tmp/kbl-out
+      - name: Helper CLI contract (exit codes)
+        run: |
+          /tmp/kbl-out/kbl-helper set 5000;  test $? -eq 2
+          /tmp/kbl-out/kbl-helper bogus;     test $? -eq 2
+          /tmp/kbl-out/kbl-helper media up;  test $? -eq 2   # media moved to kbl-media
+          /tmp/kbl-out/kbl-media sideways;   test $? -eq 2
+      - name: Tests under macOS system bash 3.2 (real BSD userland)
+        env:
+          KBL_TEST_SHELL: /bin/bash
+        run: /bin/bash ./tests/run-tests.sh
