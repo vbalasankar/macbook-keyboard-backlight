@@ -1,6 +1,6 @@
 # keyboard-light
 
-Control your MacBook's built-in keyboard backlight using global keyboard
+Control your MacBook's keyboard backlight using global keyboard
 shortcuts. No need to open System Settings.
 
 **Version:** 1.1.0
